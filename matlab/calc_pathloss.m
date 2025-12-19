@@ -31,7 +31,8 @@ switch paraEx.network
         delta_base = paraEx.h_BS-paraEx.h_rooftop;
         pl_0 = 32.4+20*log10(dist/1000)+20*log10(paraEx.center_freq/1e6); %Free-space like term
         phi_road = paraEx.phi_road*180/pi;
-        
+
+        %This is a piecewise function giving the "orientation loss" depending on how aligned the street is with the BS-MS propagation direction
         if phi_road >= 0 && phi_road < 35
             pl_ori = -10+0.354*phi_road;
         elseif phi_road >= 35 && phi_road < 55
@@ -41,7 +42,8 @@ switch paraEx.network
         end
         
         pl_lts = -16.9-10*log10(paraEx.w_r)+10*log10(paraEx.center_freq/1e6)+20*log10(paraEx.h_rooftop-paraEx.h_MS)+pl_ori;
-       
+        
+       %BS height relative to rooftops with pl_bsh contributing to the next term
         if paraEx.h_BS > paraEx.h_rooftop
             pl_bsh = -18*log10(1+delta_base);
         else
