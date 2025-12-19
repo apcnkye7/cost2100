@@ -29,7 +29,7 @@ dist = calc_dist(pos_BS, pos_MS);
 switch paraEx.network
     case 'macrocell' % The Walfisch-Ikegami-Model
         delta_base = paraEx.h_BS-paraEx.h_rooftop;
-        pl_0 = 32.4+20*log10(dist/1000)+20*log10(paraEx.center_freq/1e6);
+        pl_0 = 32.4+20*log10(dist/1000)+20*log10(paraEx.center_freq/1e6); %Free-space like term
         phi_road = paraEx.phi_road*180/pi;
         
         if phi_road >= 0 && phi_road < 35
