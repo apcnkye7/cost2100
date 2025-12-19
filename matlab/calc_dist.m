@@ -27,4 +27,4 @@ if length(a)~=length(b)
     error('Dimension mismatch between two points.');
 end
 
-l = sqrt(sum((a(:)-b(:)).^2));
+l = sqrt(sum((a(:)-b(:)).^2)); reshapes to a single column containing all elements
