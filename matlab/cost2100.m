@@ -65,7 +65,7 @@ function [paraEx, paraSt, link, env] = cost2100(network, scenario, freq, snapRat
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameter check
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%COST 2100 often models frequency correlation / bandwidth effects. So they want a band [start stop] instead of a single scalar frequency
 if length(freq)~=2
     error('Please specify freq as [freq_start freq_stop].\n');
 end
@@ -81,7 +81,8 @@ chkVal = size(MSPos);
 if chkVal(2)~=3
     error('Please specify each MS position as [x y z].\n');
 end
-
+%Every MS has its own velocity vector[ vx vy vz], so the velocity must match position shape
+%Practical scenario is we are simulating users walking along a street (vx,vy) while keeping z fixed (vz=0)
 if ~all(size(MSPos)==size(MSVelo))
     error('Please check MSPos and MSVelo.\n');
 end
@@ -93,6 +94,7 @@ end
 numBS = length(BSPosCenter(:,1)); % Number of BSs
 numMS = length(MSPos(:,1)); % Number of MSs
 
+%Environment and parameter generation pipeline
 [paraEx, paraSt] = get_para(network, scenario, freq, snapRate, snapNum, BSPosCenter, BSPosSpacing, BSPosNum, MSPos, MSVelo);
 VRtable = get_VRtable(paraEx,paraSt); % Get VR table
 MS_VR = get_MS_VR(VRtable, paraEx); % Get MS-VR locations
@@ -103,7 +105,7 @@ mpc = get_mpc(cluster, paraSt); % Get MPCs - scattering points in each cluster
 dmc = get_dmc(cluster, paraSt); % Get DMCs - diffuse multipath components
 [BS_VR, BS_VR_len, BS_VR_slope] = get_BS_VR_para(VRtable, paraEx, paraSt); % Get BS_VR parameters (large array extension)
 
-% For every BS
+% For every BS, build BS objects(per site) so each BS gets its own local scattering environment
 for m = 1:numBS 
     BS(m).idx = m; % Label of BS(m)
     BS(m).pos = BSPosCenter(m,:); % Position of BS
