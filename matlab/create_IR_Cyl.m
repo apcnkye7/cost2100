@@ -43,7 +43,7 @@ function ir_Cyl_patch = create_IR_Cyl(link, freq, delta_f, BSantPattern, MSantPa
 % from the main lobe, slow version means considering all MPCs
 % (FAST_VERSION=0)
 FAST_VERSION = 1; 
-
+%This grid defines the sampled transfer functiorn points. The IFFT later assumes these bins are uniformly spaced.
 freq_vec = freq(1):delta_f:freq(2); % Vector of frequency points
 
 numBS = size(link, 1); % Number of BSs
@@ -51,9 +51,10 @@ numMS = size(link, 2); % Number of MSs
 numSS = size(link(1,1).channel, 2); % Number of snapshots
 numFreq = length(freq_vec); % Number of frequency points
 
+%Load antenna pattern data + angular resolutions
 farfield_BS = BSantPattern.farfield_BS_Rep;
 field_MS = MSantPattern.field;
-
+%These are angular grid spacings used t map a ray's azimuth/elevation into a pattern lookup index.
 ant_phi_reso = farfield_BS(1).phi(2)-farfield_BS(1).phi(1); % BS antenna pattern azimuth resolution [rad]
 ant_theta_reso = farfield_BS(1).theta(2)-farfield_BS(1).theta(1); % BS antenna pattern elevation resolution [rad]
 user_ant_phi_reso = field_MS.phi(2)-field_MS.phi(1); % MS antenna pattern azimuth resolution [rad]
@@ -64,8 +65,8 @@ Ntheta = pi/ant_theta_reso+1; % every 5 degrees, elevation
 Nphi = 2*pi/ant_phi_reso+1; % every 5 degrees, azimuth
 ant_gain_theta = zeros(Nant, Ntheta, Nphi); % vertical-polarized
 ant_gain_phi = zeros(Nant, Ntheta, Nphi); % horizontal-polarized
-angle_theta = zeros(Nant, Ntheta);
-angle_phi = zeros(Nant, Nphi);
+angle_theta = zeros(Nant, Ntheta); %Stores the Etheta field(vertical-polarization component) for that port at that direction
+angle_phi = zeros(Nant, Nphi);%Sotres the E-phi field(horizontal-polarization component)
 
 for idx_ant = 1:Nant % Loop over 128 ports
     % Vertical-polarized part
@@ -80,22 +81,24 @@ for idx_ant = 1:Nant % Loop over 128 ports
     % phi is measured from positive x-axis [0, 360]
     % theta is measured from positsive z-axis [0, 180]
 end
-
+%The index of the mid-band frequency is found assuming the MS pattern is stored for discrete frequencies.
 % Antenna pattern at user side 
 IDX_f = find(field_MS.f==(freq(1)+(freq(2)-freq(1))/2)); % Find the index of the center frequency
 user_ant_gain_v_temp = reshape(field_MS.E_theta(:, IDX_f), length(field_MS.theta), length(field_MS.phi));
 user_ant_gain_h_temp = reshape(field_MS.E_phi(:, IDX_f), length(field_MS.theta), length(field_MS.phi));
-
+%The UE pattern is taken at one frequency slice, not varying across freq_vec
 % Convert phi to [0, 360]
 user_ant_gain_v = user_ant_gain_v_temp(:, [(length(field_MS.phi)/2+1):length(field_MS.phi), 1:length(field_MS.phi)/2]); % v-polarized part
 user_ant_gain_h = user_ant_gain_h_temp(:, [(length(field_MS.phi)/2+1):length(field_MS.phi), 1:length(field_MS.phi)/2]); % h-polarized part
 
+%This models that each user's handset orientation(azimuth) is random and may slowly rotate over snapshots
+%A practical scenario: the user is walking and turning slightly,the phone's antenna pattern rotates relative to incoming rays
 % Initial rotation
 user_ant_rot_h = -1*pi+2*pi*rand(1, numMS); % User initial phase, randomly generated between -pi and pi
 user_ant_rot_all_ss = -1*pi+2*pi*rand(1, numMS); % [-pi, pi]
 user_ant_rot_per_ss = user_ant_rot_all_ss/numSS;
 
-               
+%For each snapshot, frequency bin,MS,BS-port you'll compute a complex channel coefficient               
 H_Cyl_patch = zeros(numSS, numFreq, numMS, Nant); % [snapshot, freq, user, BS ant]
 
 for idx_BS = 1:numBS
@@ -118,6 +121,8 @@ for idx_BS = 1:numBS
             channel = [channel_MPC; channel_LOS];
 
             MPC_delay = channel(:, 5); % Delay
+            %This tells you channel(:,6) is some base complex amplitude, and columns 7-10 are polarization coupling coefficients(VV,VH,HH,HV). Multiplying gives the effective complex amplitude for each polarization path.
+            %The practical implementation is that a vertically-polarized signal transmitted can arrive as vertical or horizontal(cross-pol-leakage)
             MPC_amp_vv = channel(:, 6).*channel(:, 7); % Amplitude vv
             MPC_amp_vh = channel(:, 6).*channel(:, 8); % Amplitude vh
             MPC_amp_hh = channel(:, 6).*channel(:, 9); % Amplitude hh
@@ -164,7 +169,7 @@ for idx_BS = 1:numBS
                 if (FAST_VERSION == 0)
                     keep_IDX = 1:length(MPC_azi_BS);
                 else
-                    % Allow for some speed improvement by igonoring MPCs
+                    % Allow for some speed improvement by ignoring MPCs
                     % from directions not from the main lobe
                     [~, max_IDX] = max(squeeze(ant_gain_theta(idx_ant, round(Ntheta/2), :)).^2+squeeze(ant_gain_phi(idx_ant, round(Ntheta/2), :)).^2);
                     max_angle = angle_phi(idx_ant, max_IDX)+pi+pi/3; % +60 degrees
@@ -196,6 +201,7 @@ for idx_BS = 1:numBS
                                    mpc_user_gain_h(keep_IDX).*complex_gain_from_h;
 
                     % Get transfer function for each frequency
+                    %Build frequency response by summing rays with phase rotation
                     for idx_freq = 1:numFreq
                         H_Cyl_patch(idx_ss, idx_freq, idx_MS, idx_ant) = sum(complex_gain.*exp(-1j*2*pi*freq_vec(idx_freq)*MPC_delay(keep_IDX)));
                     end  
