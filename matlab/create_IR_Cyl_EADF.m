@@ -55,6 +55,8 @@ user_ant_phi_reso = field_MS.phi(2)-field_MS.phi(1); % MS antenna pattern azimut
 % Extract the EADF at BS side - cylindrical array
 Nant = 128;
 for i = 1:Nant
+    %BSantEADF(i).E_theta and .E_phi are not “pattern samples” like before
+    %They are EADF coefficient matrices/tensors used by eadf() to synthesize the response
     eadf_BS_theta(i,:,:) = BSantEADF(i).E_theta;
     eadf_BS_phi(i,:,:) = BSantEADF(i).E_phi;
 end
