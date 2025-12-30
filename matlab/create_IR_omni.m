@@ -52,7 +52,8 @@ switch Band
             MPC_amp = channel(:,6); 
             Hf=[];
             Nfreq = freq(1):delta_f:freq(2);    
-            
+
+            %This is the multipath response formula, if you're simulating OFDM with subcarrier spacing delta_f, this gives you H on those subcarriers for each snapshot
             for I = 1:length(Nfreq)
                 Hf(I) = sum((MPC_amp).*exp(-1j*2*pi*Nfreq(I)*MPC_delay));        
             end
