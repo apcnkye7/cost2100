@@ -45,6 +45,10 @@ C = zeros(M, length(theta));
 ff = reshape(eadf, M*U, V);
 
 for z = 1:length(phi)
+    %v is a column vector of V integer indices So vv is V×1
+    %v*phi(z) scales them by the desired azimuth coordinate
+    %exp(j2π * ...) makes the complex sinusoid basis
+    %dividing by V is a normalization (consistent with IDFT scaling)
     vv = exp(1j*2*pi*v*phi(z))/V;
     zz_tmp = ff*vv;
     uu = exp(1j*2*pi*u*theta(z))/U;
