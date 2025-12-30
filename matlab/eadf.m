@@ -31,7 +31,9 @@ function C = eadf(phi, theta, eadf)
                         % V: # of azimuth angles
 
 theta = theta(:);
+%This constructs a symmetric index set of integers centered around 0.
 u = floor((U-1)/2)+1-U:floor((U-1)/2);
+%Because the EADF coefficients are stored in an order consistent with FFT/IFFT indexing. ifftshift aligns the negative/positive frequency bins the way the exponential evaluation expects.
 u = ifftshift(u).';
     
 phi = phi(:);
