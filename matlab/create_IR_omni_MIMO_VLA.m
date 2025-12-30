@@ -45,6 +45,7 @@ switch Band
         Nfreq = .5*(freq(1) + freq(2));
 end
 
+%Array dimensions and initialization
 Nr = 1; % Assuming single-antenna terminals
 first_snapshot = 1;
 last_snapshot = size(link.channel,2); 
