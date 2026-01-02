@@ -36,7 +36,7 @@ function MS_VR = get_MS_VR(VRtable, paraEx)
 
 nVR = length(VRtable(1,:,1)); %VR number
 net_radii = paraEx.net_radii; %Radius of cell
-
+%Distribution for VR positions
 angleVR = 2*pi*rand(nVR, 1);
 distVR  = sqrt(rand(nVR, 1))*net_radii;
 x       = distVR.*cos(angleVR);
