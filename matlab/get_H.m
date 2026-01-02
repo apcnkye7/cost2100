@@ -48,9 +48,10 @@ if paraEx.freq_start==paraEx.freq_stop
 else
     type = 'Wideband'; 
 end
-
+%Time discretization(wideband taps)
 sample_rate = paraEx.sample_rate; % IR sampling rate
 tauIndMax = ceil(paraEx.delay_max/sample_rate); % Maximum delay index
+%Array sizes and preallocation
 M=length(txFull.antennaResponse(:,1,1));
 N=length(rxFull.antennaResponse(:,1,1));
 txAziRange=txFull.azimuthRange;
@@ -72,6 +73,7 @@ for m = 1:length(channel.h(:,1))
     elseif tauInd <= 0
         continue;
     else
+    %Fore each ray,it rotates the direction vectors to account for array orientation
         aod=channel.h(m,1);
         eod=channel.h(m,2);
         bsv=[sin(eod)*cos(aod) sin(eod)*sin(aod) cos(eod)];
