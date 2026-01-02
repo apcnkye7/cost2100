@@ -38,7 +38,7 @@ nVR = length(VRtable(1,:,1)); %VR number
 net_radii = paraEx.net_radii; %Radius of cell
 %Distribution for VR positions
 angleVR = 2*pi*rand(nVR, 1);
-distVR  = sqrt(rand(nVR, 1))*net_radii;
+distVR  = sqrt(rand(nVR, 1))*net_radii; this makes radial distriution proportional to r which yields uniform density over area
 x       = distVR.*cos(angleVR);
 y       = distVR.*sin(angleVR);
 MS_VR(:, 1) = x;
