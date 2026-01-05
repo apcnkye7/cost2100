@@ -66,11 +66,11 @@ theta_c_BS = paraSt.mu_theta_BS*10.^(0.1*paraSt.sigma_theta_BS*corr_randn(:, 3))
 phi_c_BS = paraSt.mu_phi_BS*10.^(0.1*paraSt.sigma_phi_BS*corr_randn(:, 4)); % Azimtuh spread BS
 theta_c_MS = paraSt.mu_theta_MS*10.^(0.1*paraSt.sigma_theta_MS*corr_randn(:, 5)); % Elevation spread MS
 phi_c_MS = paraSt.mu_phi_MS*10.^(0.1*paraSt.sigma_phi_MS*corr_randn(:, 6)); % Azimuth spread MS
-d_tau = tau_c*paraEx.c0/2; % Spatial delay spread
+d_tau = tau_c*paraEx.c0/2; % Spatial delay spread converts a delay spread to a distance spread
 
 for m = 1:nCluster    
     cluster(m).idx = m; % Label the cluster
-
+Find VR group for cluster m
     VRGrp = find(VRtable(1,:,2)==m); % Find the VR group
     
     % Find the reference BS
@@ -91,7 +91,9 @@ for m = 1:nCluster
         numVRGrp = length(VRBS);
         cluster(m).refVR= VRBS(ceil(rand(1)*numVRGrp+eps/1e80));
     end   
-    
+     %K_sel controls probability of single clusters vs twin clusters
+     %Single cluster: same physical scatterer group explains both AoD and AoA
+     %Twin cluster:BS-side and MS-side "scatterer groups" differ-more realistic in some environments and it can introduce extra delay and angular decoupling
     % Determine the cluster type: 1 single, 2 twin cluster
     cluster(m).type = (rand>paraSt.k_sel)+1;
 end
