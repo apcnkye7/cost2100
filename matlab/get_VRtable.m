@@ -37,15 +37,16 @@ function VRtable = get_VRtable(paraEx, paraSt)
 
 tic % For generating state of rand state
 numBS = paraEx.num_BS; % BS number
-rho_VR = (paraSt.n_c_far)/(pi*(paraSt.r_c-paraSt.l_c)^2); % VR density
+rho_VR = (paraSt.n_c_far)/(pi*(paraSt.r_c-paraSt.l_c)^2); % VR density %number of far clusters
 n_VR = round(rho_VR*pi*paraEx.net_radii^2); % Total number of VRs in the cell of one BS
-numVRlogi = n_VR*numBS; % Total number of logical VRs for all BSs
-numVRtrue = round(numVRlogi/sum([1:numBS].*paraSt.BS_common)); % Total number of physical VRs for all BSs
+numVRlogi = n_VR*numBS; % Total number of logical VRs for all BSs, total VR assignments if each BS had its own independent set
+numVRtrue = round(numVRlogi/sum([1:numBS].*paraSt.BS_common)); % Total number of physical VRs for all BSs, the number of physical VRS shared across BSs accounting for "BS commonness"
 
 VRtable = zeros(numBS,numVRlogi,2);
 
 % Assign the k-BS-common VRs
 for m = 1:numBS
+	%paraSt.BS_common(m) is the fraction/probability mass of VRs that are common to m BSs
 	num_BSCC(m) = round(numVRtrue*paraSt.BS_common(m)); % Total number of each kBS-CC
 end
 for m = numBS:-1:2	
