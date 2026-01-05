@@ -35,10 +35,11 @@ function VRLOS = get_VRLOS(BS, paraEx, paraSt)
 %You should have received a copy of the GNU General Public License along 
 %with this program. If not, see <http://www.gnu.org/licenses/>.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%d_co: distance scale beyond which correlation decays or beyond which certain components vanish
+%r_l:likely a "LOS region radius" or minimum distance offset(to avoid placing VRLOS too close to the BS)
 x = rand*(paraSt.d_co-paraSt.r_l);
 y = rand*(paraSt.d_co-paraSt.r_l);
-
+%rejects samples outside a circle
 while (sqrt(x^2+y^2)>paraSt.d_co)
     x = rand*(paraSt.d_co-paraSt.r_l);
     y = rand*(paraSt.d_co-paraSt.r_l);
